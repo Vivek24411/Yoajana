@@ -9,18 +9,18 @@ export default function Error({ reset }: { error: Error; reset: () => void }) {
   const lang = usePathname().startsWith("/en") ? "en" : "hi";
   const t = getDictionary(lang);
   return (
-    <div className="enter flex flex-col items-center gap-4 py-16 text-center">
-      <span className="grid size-16 place-items-center rounded-full bg-danger-soft text-danger">
+    <div className="enter flex flex-col items-start gap-4 border-t-[3px] border-ink py-8">
+      <span className="text-accent">
         <Icon name="alert" size={30} />
       </span>
-      <h1 className="font-display text-2xl font-semibold">{t.errors.title}</h1>
+      <h1 className="font-display text-3xl">{t.errors.title}</h1>
       <p className="max-w-sm text-muted">{t.errors.body}</p>
-      <div className="flex flex-wrap justify-center gap-2">
-        <button type="button" onClick={reset} className="btn btn-primary pressable">
+      <div className="flex flex-wrap gap-2">
+        <button type="button" onClick={reset} className="btn btn-ink pressable">
           <Icon name="refresh" size={18} />
           {t.chat.retry}
         </button>
-        <Link href={`/${lang}`} className="btn btn-ghost pressable">
+        <Link href={`/${lang}`} className="btn btn-line pressable">
           {t.errors.home}
         </Link>
       </div>

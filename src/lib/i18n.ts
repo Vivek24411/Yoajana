@@ -6,12 +6,17 @@ export const hasLocale = (l: string): l is Locale => (LOCALES as readonly string
 export const fmt = (s: string, vars: Record<string, string | number>) =>
   s.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ""));
 
+/** Section numbers: "०२" in Hindi, "02" in English. */
+export const numeral = (n: number, lang: Locale, pad = 2) =>
+  String(n).padStart(pad, "0").replace(/\d/g, (d) => (lang === "hi" ? "०१२३४५६७८९"[Number(d)] : d));
+
 const en = {
   appName: "Yojana Sahayak",
   tagline: "Know which government schemes are for you — ask in Hindi or English",
   switchLang: "हिंदी",
   nav: { home: "Home", chat: "Ask", find: "My Schemes", browse: "All Schemes", help: "Help", saved: "Saved" },
-  common: { close: "Close", call: "Call", back: "Back", seeAll: "See all", years: "years", more: "Show more", less: "Show less" },
+  common: { close: "Close", call: "Call", back: "Back", seeAll: "See all", years: "years", more: "Show more", less: "Show less", or: "or" },
+  stamp: { eligible: "Eligible", maybe: "Maybe", ineligible: "Not eligible" },
   settings: {
     open: "Display settings",
     textSize: "Text size",
@@ -37,7 +42,7 @@ const en = {
     topics: "Pick a topic",
     popular: "Most useful schemes",
     saved: "Saved by you",
-    safetyTitle: "Never pay anyone to apply",
+    safetyTitle: "Beware",
     safety: "Government schemes never ask for money to apply. Never share your OTP, PIN or bank password with anyone.",
     safetyCall: "Cheated? Call 1930",
     helpTitle: "Need help in person?",
@@ -48,6 +53,7 @@ const en = {
   },
   chat: {
     title: "Ask Yojana Mitra",
+    assistant: "Yojana Mitra",
     placeholder: "Type your question…",
     send: "Send",
     listening: "Listening… speak now",
@@ -144,6 +150,7 @@ const en = {
     share: "Send list on WhatsApp",
     shareIntro: "Government schemes I may be eligible for (from Yojana Sahayak):",
     confirmReset: "Clear all answers for {who}?",
+    confirmResetSelf: "Clear all your answers?",
     forWho: "Checking for",
     addMember: "Family member",
     whoIsThis: "Who are you checking for?",
@@ -199,6 +206,7 @@ const en = {
       unknown: "Can you get this scheme?",
       checkCta: "Answer 9 quick questions",
       basedOn: "Based on answers for {who}",
+      basedOnSelf: "Based on your answers",
       fail: "Does not match",
       missing: "Still to answer",
       update: "Update answers",
@@ -213,6 +221,7 @@ const en = {
     results: "schemes",
     showing: "Showing",
     allTopics: "All",
+    noResultsTitle: "Nothing found",
     noResults: "No schemes found. Try a simpler word like “pension” or “kisan”.",
     clear: "Clear",
     usefulFirst: "Most useful first",
@@ -341,7 +350,8 @@ const hi: Dictionary = {
   tagline: "जानिए कौन-सी सरकारी योजनाएँ आपके लिए हैं — हिंदी या अंग्रेज़ी में पूछें",
   switchLang: "English",
   nav: { home: "होम", chat: "पूछें", find: "मेरी योजनाएँ", browse: "सभी योजनाएँ", help: "मदद", saved: "सेव" },
-  common: { close: "बंद करें", call: "कॉल करें", back: "पीछे", seeAll: "सब देखें", years: "साल", more: "और देखें", less: "कम देखें" },
+  common: { close: "बंद करें", call: "कॉल करें", back: "पीछे", seeAll: "सब देखें", years: "साल", more: "और देखें", less: "कम देखें", or: "या" },
+  stamp: { eligible: "पात्र", maybe: "शायद", ineligible: "अपात्र" },
   settings: {
     open: "दिखावट की सेटिंग",
     textSize: "अक्षर का आकार",
@@ -367,7 +377,7 @@ const hi: Dictionary = {
     topics: "विषय चुनें",
     popular: "सबसे काम की योजनाएँ",
     saved: "आपकी सेव की हुई",
-    safetyTitle: "आवेदन के लिए किसी को पैसा न दें",
+    safetyTitle: "सावधान",
     safety: "सरकारी योजना में आवेदन के लिए कोई पैसा नहीं लगता। अपना OTP, PIN या बैंक पासवर्ड किसी को न बताएं।",
     safetyCall: "धोखा हुआ? 1930 पर कॉल करें",
     helpTitle: "किसी से मिलकर मदद चाहिए?",
@@ -378,6 +388,7 @@ const hi: Dictionary = {
   },
   chat: {
     title: "योजना मित्र से पूछें",
+    assistant: "योजना मित्र",
     placeholder: "अपना सवाल लिखें…",
     send: "भेजें",
     listening: "सुन रहे हैं… अब बोलिए",
@@ -474,6 +485,7 @@ const hi: Dictionary = {
     share: "लिस्ट WhatsApp पर भेजें",
     shareIntro: "ये सरकारी योजनाएँ मेरे काम की हो सकती हैं (योजना सहायक से):",
     confirmReset: "{who} के सारे जवाब मिटाएँ?",
+    confirmResetSelf: "अपने सारे जवाब मिटाएँ?",
     forWho: "किसके लिए",
     addMember: "परिवार का सदस्य",
     whoIsThis: "किसके लिए जांच कर रहे हैं?",
@@ -529,6 +541,7 @@ const hi: Dictionary = {
       unknown: "क्या यह योजना आपको मिलेगी?",
       checkCta: "9 आसान सवालों के जवाब दें",
       basedOn: "{who} के जवाबों के अनुसार",
+      basedOnSelf: "आपके जवाबों के अनुसार",
       fail: "मेल नहीं खाता",
       missing: "जवाब बाकी",
       update: "जवाब बदलें",
@@ -543,6 +556,7 @@ const hi: Dictionary = {
     results: "योजनाएँ",
     showing: "दिखा रहे हैं",
     allTopics: "सभी",
+    noResultsTitle: "कुछ नहीं मिला",
     noResults: "कोई योजना नहीं मिली। “पेंशन” या “किसान” जैसे आसान शब्द से खोजें।",
     clear: "हटाएँ",
     usefulFirst: "सबसे काम की पहले",

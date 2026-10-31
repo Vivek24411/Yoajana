@@ -38,96 +38,76 @@ export default async function BrowsePage({ params, searchParams }: PageProps<"/[
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <header className="enter">
-        <h1 className="font-display text-[2rem] font-semibold leading-tight">{t.browse.title}</h1>
+        <h1 className="font-display text-[2.4rem] leading-tight">{t.browse.title}</h1>
         <p className="mt-0.5 text-muted">
-          <b className="text-text tabular-nums">{list.length.toLocaleString("en-IN")}</b> {t.browse.results}
+          <b className="font-display text-lg font-normal text-ink tabular-nums">{list.length.toLocaleString("en-IN")}</b> {t.browse.results}
           {!q && ` · ${t.browse.usefulFirst}`}
         </p>
       </header>
 
-      <form action={`/${lang}/schemes`} role="search" className="enter flex flex-col gap-2.5" style={{ "--i": 1 } as React.CSSProperties}>
+      <form action={`/${lang}/schemes`} role="search" className="enter flex flex-col gap-3" style={{ "--i": 1 } as React.CSSProperties}>
         {cat && <input type="hidden" name="cat" value={cat} />}
-        <div className="relative">
-          <Icon name="search" size={20} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
-          <input
-            name="q"
-            defaultValue={q}
-            placeholder={t.browse.search}
-            aria-label={t.browse.search}
-            enterKeyHint="search"
-            className="field rounded-full pl-12"
-          />
-        </div>
-        <div className="flex gap-2">
-          <div className="relative min-w-0 flex-1">
-            <Icon name="mapPin" size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
-            <AutoSubmitSelect
-              name="state"
-              defaultValue={state}
-              aria-label={t.find.q.state}
-              className="field appearance-none truncate rounded-full pl-11 pr-10"
-            >
-              <option value="">{t.browse.allStates}</option>
-              <option value="central">{t.browse.centralOnly}</option>
-              {states().map((s) => (
-                <option key={s} value={s}>
-                  {stateLabel(s, lang)}
-                </option>
-              ))}
-            </AutoSubmitSelect>
-            <Icon name="chevronDown" size={18} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted" />
+        <div className="flex items-end gap-3">
+          <div className="relative flex-1">
+            <Icon name="search" size={20} className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 text-muted" />
+            <input name="q" defaultValue={q} placeholder={t.browse.search} aria-label={t.browse.search} enterKeyHint="search" className="field pl-9" />
           </div>
-          <button className="btn btn-primary pressable h-14 px-6">{t.browse.searchBtn}</button>
+          <button className="btn btn-ink pressable">{t.browse.searchBtn}</button>
         </div>
+        <label className="flex items-center gap-2 text-[0.95rem]">
+          <Icon name="mapPin" size={18} className="flex-none text-accent" />
+          <span className="sr-only">{t.find.q.state}</span>
+          <AutoSubmitSelect
+            name="state"
+            defaultValue={state}
+            className="min-w-0 cursor-pointer appearance-none border-0 bg-transparent py-1 pr-6 font-bold underline decoration-rule decoration-2 underline-offset-4 outline-none"
+          >
+            <option value="">{t.browse.allStates}</option>
+            <option value="central">{t.browse.centralOnly}</option>
+            {states().map((s) => (
+              <option key={s} value={s}>
+                {stateLabel(s, lang)}
+              </option>
+            ))}
+          </AutoSubmitSelect>
+          <Icon name="chevronDown" size={16} className="-ml-6 flex-none text-muted" />
+        </label>
       </form>
 
-      <nav aria-label={t.home.topics} className="enter -mx-4" style={{ "--i": 2 } as React.CSSProperties}>
-        <ul className="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-1">
+      <nav aria-label={t.home.topics} className="enter -mx-4 border-b border-rule" style={{ "--i": 2 } as React.CSSProperties}>
+        <ul className="no-scrollbar flex gap-6 overflow-x-auto px-4">
           <li>
-            <Link
-              href={href({ cat: undefined, page: undefined })}
-              scroll={false}
-              aria-current={!cat ? "true" : undefined}
-              className={`pressable chip h-10 whitespace-nowrap border px-4 text-[0.92rem] ${!cat ? "border-brand bg-brand text-brand-ink" : "border-border-strong bg-surface"}`}
-            >
+            <Link href={href({ cat: undefined, page: undefined })} scroll={false} aria-current={!cat ? "true" : undefined} className="tab block">
               {t.browse.allTopics}
             </Link>
           </li>
-          {CATEGORIES.map((c) => {
-            const on = cat === c.id;
-            return (
-              <li key={c.id}>
-                <Link
-                  href={href({ cat: on ? undefined : c.id, page: undefined })}
-                  scroll={false}
-                  aria-current={on ? "true" : undefined}
-                  className={`pressable chip h-10 whitespace-nowrap border px-3.5 text-[0.92rem] ${
-                    on ? "border-brand bg-brand text-brand-ink" : "border-border-strong bg-surface"
-                  }`}
-                >
-                  <Icon name={c.icon} size={17} />
-                  {c.label[lang]}
-                </Link>
-              </li>
-            );
-          })}
+          {CATEGORIES.map((c) => (
+            <li key={c.id}>
+              <Link
+                href={href({ cat: cat === c.id ? undefined : c.id, page: undefined })}
+                scroll={false}
+                aria-current={cat === c.id ? "true" : undefined}
+                className="tab block"
+              >
+                {c.label[lang]}
+              </Link>
+            </li>
+          ))}
         </ul>
       </nav>
 
       {list.length === 0 ? (
-        <div className="enter card flex flex-col items-center gap-3 px-6 py-10 text-center">
-          <span className="grid size-14 place-items-center rounded-full bg-surface-2 text-muted">
-            <Icon name="search" size={26} />
-          </span>
+        <div className="enter flex flex-col items-start gap-4 py-6">
+          <p className="font-display text-2xl">{t.browse.noResultsTitle}</p>
           <p className="max-w-sm text-muted">{t.browse.noResults}</p>
-          <Link href={`/${lang}/schemes`} className="btn btn-ghost pressable min-h-11 text-base">
+          <Link href={`/${lang}/schemes`} className="btn btn-line pressable">
             {t.browse.clear}
           </Link>
         </div>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="-mt-2">
           {shown.map((s, i) => (
             <SchemeCard
               key={s.slug}
@@ -139,7 +119,6 @@ export default async function BrowsePage({ params, searchParams }: PageProps<"/[
               state={s.state}
               place={s.state ? stateLabel(s.state, lang) : t.scheme.central}
               summary={POPULAR[s.slug]?.[lang].line ?? summarize(s.details || s.benefits, 170)}
-              tags={s.tags}
               reviewed={s.reviewed}
               reviewedLabel={t.scheme.reviewed}
               saveLabels={{ save: t.scheme.save, saved: t.scheme.saved }}
@@ -149,7 +128,7 @@ export default async function BrowsePage({ params, searchParams }: PageProps<"/[
       )}
 
       {list.length > shown.length && (
-        <Link href={href({ page: String(page + 1) })} scroll={false} className="btn btn-ghost pressable w-full">
+        <Link href={href({ page: String(page + 1) })} scroll={false} className="btn btn-line pressable w-full">
           {t.find.showMore} ({(list.length - shown.length).toLocaleString("en-IN")})
           <Icon name="chevronDown" size={18} />
         </Link>

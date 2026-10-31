@@ -403,16 +403,15 @@ export function Icon({ name, size = 24, strokeWidth = 1.75, ...rest }: { name: I
   );
 }
 
-/** Brand mark: a sprouting seed inside a sun — growth and support. */
+/** Brand mark: a round office seal with "यो", in the accent ink. */
 export function Logo({ size = 36 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden focusable="false">
-      <rect width="40" height="40" rx="12" fill="var(--brand)" />
-      <circle cx="20" cy="17" r="7.5" fill="var(--accent)" />
-      <path d="M20 32V20" stroke="var(--brand-ink)" strokeWidth="2.2" strokeLinecap="round" />
-      <path d="M20 24c-4 0-6.5-2.6-6.5-6 4 0 6.5 2.6 6.5 6Z" fill="var(--brand-ink)" />
-      <path d="M20 26c3.6 0 6-2.3 6-5.5-3.6 0-6 2.3-6 5.5Z" fill="var(--brand-ink)" />
-      <path d="M9 32h22" stroke="var(--brand-ink)" strokeOpacity=".45" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="20" cy="20" r="18.5" fill="none" stroke="var(--accent)" strokeWidth="2" />
+      <circle cx="20" cy="20" r="15" fill="var(--accent)" />
+      <text x="20" y="26.5" textAnchor="middle" fontFamily="var(--font-rozha), serif" fontSize="17" fill="var(--paper)">
+        यो
+      </text>
     </svg>
   );
 }

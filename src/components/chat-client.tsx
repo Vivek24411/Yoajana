@@ -122,10 +122,10 @@ export function ChatClient({ lang, t, initialQuestion }: { lang: Locale; t: Dict
   const empty = messages.length === 0;
 
   return (
-    <div className="flex min-h-[calc(100dvh-9rem)] flex-col gap-4 pb-36">
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="font-display text-[1.6rem] font-semibold leading-tight">{t.title}</h1>
-        <div className="flex items-center gap-1.5">
+    <div className="flex min-h-[calc(100dvh-9rem)] flex-col gap-5 pb-36">
+      <div className="flex items-center justify-between gap-2 border-b-2 border-ink pb-3">
+        <h1 className="font-display text-[1.75rem] leading-tight">{t.title}</h1>
+        <div className="flex items-center gap-1">
           <button
             type="button"
             role="switch"
@@ -135,16 +135,14 @@ export function ChatClient({ lang, t, initialQuestion }: { lang: Locale; t: Dict
               setPref("autoSpeak", !prefs.autoSpeak);
             }}
             title={t.autoSpeak}
-            className={`pressable inline-flex h-10 items-center gap-1.5 rounded-full border px-3 text-sm font-semibold ${
-              prefs.autoSpeak ? "border-brand bg-brand-soft text-brand" : "border-border-strong text-muted"
-            }`}
+            className="pressable inline-flex h-10 items-center gap-2 rounded-md px-2 text-sm font-bold"
           >
-            <Icon name="volume" size={18} />
+            <Icon name="volume" size={19} className={prefs.autoSpeak ? "text-accent" : "text-muted"} />
             <span className="hidden sm:inline">{t.autoSpeak}</span>
-            <span className={`relative h-5 w-8 rounded-full transition-colors ${prefs.autoSpeak ? "bg-brand" : "bg-border-strong"}`}>
+            <span className={`relative h-5 w-9 rounded-full border-[1.5px] border-ink transition-colors ${prefs.autoSpeak ? "bg-ink" : ""}`}>
               <span
-                className={`absolute top-0.5 size-4 rounded-full bg-surface shadow transition-transform duration-300 ease-[var(--ease-spring)] ${
-                  prefs.autoSpeak ? "translate-x-3.5" : "translate-x-0.5"
+                className={`absolute top-[1.5px] size-3.5 rounded-full transition-transform duration-300 ease-[var(--ease-spring)] ${
+                  prefs.autoSpeak ? "translate-x-[1.05rem] bg-paper" : "translate-x-[2px] bg-ink"
                 }`}
               />
             </span>
@@ -155,17 +153,18 @@ export function ChatClient({ lang, t, initialQuestion }: { lang: Locale; t: Dict
               onClick={newChat}
               aria-label={t.newChat}
               title={t.newChat}
-              className="pressable grid size-10 place-items-center rounded-full border border-border-strong text-muted"
+              className="pressable inline-flex h-10 items-center gap-1 rounded-md px-2 text-sm font-bold text-accent"
             >
-              <Icon name="plus" size={20} />
+              <Icon name="plus" size={18} strokeWidth={2.4} />
+              <span className="hidden sm:inline">{t.newChat}</span>
             </button>
           )}
         </div>
       </div>
 
       {empty && (
-        <div className="flex flex-1 flex-col items-center gap-6 pt-6 text-center">
-          <div className="enter flex flex-col items-center gap-4">
+        <div className="flex flex-1 flex-col gap-8 pt-4">
+          <div className="enter flex items-center gap-4">
             <MicButton
               size="xl"
               listening={voice.listening}
@@ -174,21 +173,19 @@ export function ChatClient({ lang, t, initialQuestion }: { lang: Locale; t: Dict
               labels={{ start: t.micStart, stop: t.micStop, listening: t.listening }}
             />
             <div>
-              <p className="font-display text-2xl font-semibold">{t.emptyTitle}</p>
-              <p className="mt-1 text-muted">{t.emptyBody}</p>
+              <p className="font-display text-[1.6rem] leading-tight">{t.emptyTitle}</p>
+              <p className="mt-1 leading-snug text-muted">{t.emptyBody}</p>
             </div>
           </div>
-          <div className="w-full text-left">
-            <p className="eyebrow mb-2">{t.tryAsking}</p>
-            <ul className="flex flex-col gap-2">
+          <div>
+            <p className="kicker mb-1">{t.tryAsking}</p>
+            <ul className="border-t border-rule">
               {t.suggestions.map((s, i) => (
                 <li key={s} className="enter" style={{ "--i": i + 2 } as React.CSSProperties}>
-                  <button type="button" onClick={() => send(s)} className="card pressable lift flex w-full items-center gap-3 px-4 py-3.5 text-left">
-                    <span className="grid size-9 flex-none place-items-center rounded-xl bg-brand-soft text-brand">
-                      <Icon name={SUGGESTION_ICONS[i] ?? "chat"} size={19} />
-                    </span>
-                    <span className="flex-1 leading-snug">{s}</span>
-                    <Icon name="arrowRight" size={18} className="flex-none text-muted" />
+                  <button type="button" onClick={() => send(s)} className="group flex w-full items-center gap-3 border-b border-rule py-3.5 text-left">
+                    <Icon name={SUGGESTION_ICONS[i] ?? "chat"} size={20} className="flex-none text-accent" />
+                    <span className="flex-1 font-semibold leading-snug">“{s}”</span>
+                    <Icon name="arrowRight" size={18} className="flex-none text-muted transition-transform duration-300 group-hover:translate-x-0.5" />
                   </button>
                 </li>
               ))}
@@ -197,13 +194,13 @@ export function ChatClient({ lang, t, initialQuestion }: { lang: Locale; t: Dict
         </div>
       )}
 
-      <ol className="flex flex-col gap-4" aria-live="polite">
+      <ol className="flex flex-col gap-6" aria-live="polite">
         {messages.map((m, idx) => {
           const text = textOf(m);
           const isLast = idx === messages.length - 1;
           if (m.role === "user") {
             return (
-              <li key={m.id} className="enter ml-auto max-w-[85%] rounded-[1.4rem] rounded-br-md bg-brand px-4 py-2.5 text-brand-ink">
+              <li key={m.id} className="enter ml-auto max-w-[85%] rounded-lg rounded-br-sm bg-ink px-4 py-2.5 font-semibold text-paper">
                 {text}
               </li>
             );
@@ -211,29 +208,30 @@ export function ChatClient({ lang, t, initialQuestion }: { lang: Locale; t: Dict
           const tools = m.parts.filter((p) => p.type in TOOLS);
           const streaming = isLast && busy;
           return (
-            <li key={m.id} className="enter flex gap-2.5">
-              <span className="mt-1 flex-none">
-                <Logo size={30} />
+            <li key={m.id} className="enter flex flex-col gap-2">
+              <span className="flex items-center gap-2 text-sm font-bold text-muted">
+                <Logo size={22} />
+                {t.assistant}
               </span>
-              <div className="card min-w-0 flex-1 rounded-tl-md px-4 py-3">
-                {tools.length > 0 && (
-                  <div className="mb-2 flex flex-wrap gap-1.5">
-                    {tools.map((p, i) => {
-                      const meta = TOOLS[p.type];
-                      const part = p as { state?: string; input?: { query?: string } };
-                      const running = part.state !== "output-available" && part.state !== "output-error";
-                      return (
-                        <span key={i} className="chip fade-in max-w-full bg-surface-2 text-muted">
-                          {running ? <Icon name="refresh" size={13} className="spin flex-none" /> : <Icon name={meta.icon} size={13} className="flex-none" />}
-                          <span className="truncate">
-                            {t[running ? meta.running : meta.done] as string}
-                            {part.input?.query ? `: ${part.input.query}` : ""}
-                          </span>
+              {tools.length > 0 && (
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[0.82rem] font-semibold text-muted">
+                  {tools.map((p, i) => {
+                    const meta = TOOLS[p.type];
+                    const part = p as { state?: string; input?: { query?: string } };
+                    const running = part.state !== "output-available" && part.state !== "output-error";
+                    return (
+                      <span key={i} className="fade-in inline-flex max-w-full items-center gap-1.5">
+                        {running ? <Icon name="refresh" size={13} className="spin flex-none text-accent" /> : <Icon name="check" size={13} strokeWidth={3} className="flex-none text-stamp" />}
+                        <span className="truncate">
+                          {t[running ? meta.running : meta.done] as string}
+                          {part.input?.query ? `: ${part.input.query}` : ""}
                         </span>
-                      );
-                    })}
-                  </div>
-                )}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+              <div className="border-l-2 border-accent pl-4">
                 {text ? (
                   <div className="prose-chat break-words">
                     <ReactMarkdown
@@ -255,8 +253,8 @@ export function ChatClient({ lang, t, initialQuestion }: { lang: Locale; t: Dict
                   streaming && <TypingDots />
                 )}
                 {text && !streaming && (
-                  <div className="mt-3 flex border-t border-border pt-2.5">
-                    <SpeakButton id={`msg-${m.id}`} text={text} labels={{ listen: t.listen, stop: t.stopListen }} className="py-1.5" />
+                  <div className="mt-3">
+                    <SpeakButton id={`msg-${m.id}`} text={text} labels={{ listen: t.listen, stop: t.stopListen }} />
                   </div>
                 )}
               </div>
@@ -264,30 +262,30 @@ export function ChatClient({ lang, t, initialQuestion }: { lang: Locale; t: Dict
           );
         })}
         {status === "submitted" && (
-          <li className="fade-in flex gap-2.5">
-            <span className="mt-1 flex-none">
-              <Logo size={30} />
-            </span>
-            <div className="card flex items-center gap-3 rounded-tl-md px-4 py-3 text-muted">
-              <TypingDots />
-              <span className="text-sm">{t.thinking}</span>
-            </div>
+          <li className="fade-in flex items-center gap-3 border-l-2 border-accent pl-4 text-muted">
+            <TypingDots />
+            <span className="text-sm font-semibold">{t.thinking}</span>
           </li>
         )}
       </ol>
 
       {error && (
-        <div className="card flex flex-wrap items-center gap-3 border-danger/40 bg-danger-soft p-4 text-danger">
-          <Icon name="alert" size={20} />
-          <span className="flex-1">{t.error}</span>
-          <button type="button" className="btn btn-ghost pressable min-h-10 bg-surface text-sm text-text" onClick={() => regenerate()}>
+        <div className="notice flex flex-wrap items-center gap-3">
+          <Icon name="alert" size={20} className="text-accent" />
+          <span className="flex-1 font-bold">{t.error}</span>
+          <button type="button" className="btn btn-ink pressable min-h-10 text-sm" onClick={() => regenerate()}>
             <Icon name="refresh" size={16} />
             {t.retry}
           </button>
         </div>
       )}
 
-      {!empty && <p className="flex items-start gap-2 text-sm text-muted"><Icon name="info" size={16} className="mt-0.5 flex-none" />{t.disclaimer}</p>}
+      {!empty && (
+        <p className="flex items-start gap-2 border-t border-rule pt-3 text-sm text-muted">
+          <Icon name="info" size={16} className="mt-0.5 flex-none" />
+          {t.disclaimer}
+        </p>
+      )}
       <div ref={bottomRef} />
 
       <form
@@ -295,22 +293,22 @@ export function ChatClient({ lang, t, initialQuestion }: { lang: Locale; t: Dict
           e.preventDefault();
           send(input);
         }}
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-border/80 bg-surface/90 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl backdrop-saturate-150"
+        className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-ink bg-paper/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md"
       >
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-2xl">
           {notice && (
-            <p className="fade-in mb-2 flex items-center gap-2 text-sm text-danger">
+            <p className="fade-in mb-2 flex items-center gap-2 text-sm font-semibold text-accent">
               <Icon name="alert" size={16} />
               {notice}
             </p>
           )}
           {voice.listening && (
-            <p className="fade-in mb-2 flex items-center gap-2.5 text-sm font-semibold text-danger">
+            <p className="fade-in mb-2 flex items-center gap-2.5 text-sm font-bold text-accent">
               <SoundWave className="h-4" />
               {t.listening}
             </p>
           )}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <MicButton
               listening={voice.listening}
               busy={voice.busy}
@@ -323,23 +321,23 @@ export function ChatClient({ lang, t, initialQuestion }: { lang: Locale; t: Dict
               placeholder={t.placeholder}
               aria-label={t.placeholder}
               enterKeyHint="send"
-              className="field h-14 min-w-0 flex-1 rounded-full bg-bg"
+              className="field min-w-0 flex-1"
             />
             {busy ? (
               <button
                 type="button"
                 onClick={() => stop()}
                 aria-label={t.stop}
-                className="pressable grid size-14 flex-none place-items-center rounded-full bg-text text-bg"
+                className="pressable grid size-12 flex-none place-items-center rounded-md border-[1.5px] border-ink"
               >
-                <Icon name="stop" size={20} />
+                <Icon name="stop" size={18} />
               </button>
             ) : (
               <button
                 type="submit"
                 disabled={!input.trim()}
                 aria-label={t.send}
-                className="pressable grid size-14 flex-none place-items-center rounded-full bg-brand text-brand-ink disabled:bg-surface-2 disabled:text-muted"
+                className="pressable grid size-12 flex-none place-items-center rounded-md bg-accent text-paper disabled:bg-paper-2 disabled:text-muted"
               >
                 <Icon name="send" size={22} strokeWidth={2.2} />
               </button>

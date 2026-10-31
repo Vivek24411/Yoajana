@@ -157,7 +157,7 @@ export function MicButton({
   labels: { start: string; stop: string; listening: string };
   size?: "md" | "xl";
 }) {
-  const dims = size === "xl" ? "size-24" : "size-14";
+  const dims = size === "xl" ? "size-[4.5rem]" : "size-14";
   return (
     <button
       type="button"
@@ -165,27 +165,24 @@ export function MicButton({
       disabled={busy}
       aria-pressed={listening}
       aria-label={listening ? labels.stop : labels.start}
-      className={`pressable relative grid shrink-0 place-items-center rounded-full disabled:opacity-60 ${dims} ${
-        listening ? "bg-danger text-white" : size === "xl" ? "bg-accent text-accent-ink" : "bg-brand text-brand-ink"
+      className={`pressable relative grid shrink-0 place-items-center rounded-full text-paper disabled:opacity-60 ${dims} ${
+        listening || size === "xl" ? "bg-accent" : "bg-ink"
       }`}
     >
       {listening && (
-        <span aria-hidden className="pointer-events-none absolute inset-0 text-danger">
+        <span aria-hidden className="pointer-events-none absolute inset-0 text-accent">
           <span className="mic-ring" />
           <span className="mic-ring" />
           <span className="mic-ring" />
         </span>
       )}
-      {size === "xl" && !listening && (
-        <span aria-hidden className="breathe pointer-events-none absolute -inset-2 rounded-full border-2 border-accent/40" />
-      )}
       <span aria-hidden className="relative">
         {busy ? (
-          <Icon name="refresh" size={size === "xl" ? 36 : 24} className="spin" />
+          <Icon name="refresh" size={size === "xl" ? 30 : 24} className="spin" />
         ) : listening ? (
-          <Icon name="stop" size={size === "xl" ? 34 : 22} />
+          <Icon name="stop" size={size === "xl" ? 28 : 22} />
         ) : (
-          <Icon name="mic" size={size === "xl" ? 40 : 26} strokeWidth={2} />
+          <Icon name="mic" size={size === "xl" ? 34 : 26} strokeWidth={2} />
         )}
       </span>
       <span className="sr-only" aria-live="polite">{listening ? labels.listening : ""}</span>
@@ -293,11 +290,11 @@ export function SpeakButton({
       type="button"
       onClick={() => (active ? stopSpeaking() : speak(text, id))}
       aria-pressed={active}
-      className={`pressable inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold ${
-        active ? "border-brand bg-brand text-brand-ink" : "border-border-strong text-text hover:bg-surface-2"
+      className={`pressable inline-flex h-10 items-center gap-2 rounded-md border-[1.5px] border-ink px-3 text-[0.95rem] font-bold ${
+        active ? "bg-ink text-paper" : "hover:bg-paper-2"
       } ${className}`}
     >
-      {active ? <SoundWave className="h-4 w-[26px] [&>span]:w-[3px]" /> : <Icon name="volume" size={18} />}
+      {active ? <SoundWave className="h-4" /> : <Icon name="volume" size={18} />}
       {active ? labels.stop : labels.listen}
     </button>
   );

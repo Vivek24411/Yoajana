@@ -13,15 +13,13 @@ export function InstallCard({ t }: { t: Dictionary["help"] }) {
   const { available, install } = useInstallPrompt();
   if (!available) return null;
   return (
-    <section className="card enter flex items-center gap-4 p-5">
-      <span className="grid size-12 flex-none place-items-center rounded-2xl bg-accent-soft text-accent">
-        <Icon name="download" size={24} />
-      </span>
+    <section className="enter flex items-center gap-4 border-y-2 border-ink py-4">
+      <Icon name="download" size={26} className="flex-none text-accent" />
       <div className="flex-1">
         <h2 className="font-bold">{t.installTitle}</h2>
         <p className="text-sm text-muted">{t.installBody}</p>
       </div>
-      <button type="button" onClick={install} className="btn btn-primary pressable min-h-11 text-base">
+      <button type="button" onClick={install} className="btn btn-ink pressable">
         {t.installBtn}
       </button>
     </section>
@@ -46,7 +44,7 @@ export function ClearData({ t }: { t: Dictionary["help"] }) {
         }
         setDone(true);
       }}
-      className="btn btn-ghost pressable min-h-11 self-start border-danger/40 text-base text-danger"
+      className="btn btn-line pressable self-start border-accent text-accent"
     >
       <Icon name={done ? "check" : "trash"} size={18} />
       {done ? t.cleared : t.clearData}
@@ -59,12 +57,10 @@ export function SavedList({ lang, t }: { lang: Locale; t: Dictionary }) {
   const docs = useDocs();
   if (!saved.length) {
     return (
-      <div className="enter card flex flex-col items-center gap-4 px-6 py-12 text-center">
-        <span className="grid size-16 place-items-center rounded-full bg-accent-soft text-accent">
-          <Icon name="bookmark" size={30} />
-        </span>
+      <div className="enter flex flex-col items-start gap-4 border-t-[3px] border-ink pt-5">
+        <Icon name="bookmark" size={30} className="text-accent" />
         <p className="max-w-sm text-muted">{t.saved.empty}</p>
-        <Link href={`/${lang}/schemes`} className="btn btn-primary pressable">
+        <Link href={`/${lang}/schemes`} className="btn btn-ink pressable">
           {t.saved.browse}
           <Icon name="arrowRight" size={18} />
         </Link>
@@ -72,24 +68,25 @@ export function SavedList({ lang, t }: { lang: Locale; t: Dictionary }) {
     );
   }
   return (
-    <ul className="flex flex-col gap-3">
+    <ul className="border-t-[3px] border-ink">
       {saved.map((s, i) => {
         const ready = docs[s.slug]?.length ?? 0;
         const href = `/${lang}/schemes/${s.slug}`;
+        const local = localName(s.slug, lang);
         return (
-          <li key={s.slug} className="enter card pressable lift relative" style={{ "--i": i } as React.CSSProperties}>
-            <Link href={href} className="flex flex-col gap-1 p-4 pr-14 after:absolute after:inset-0 after:rounded-[inherit] after:content-['']">
-              <span className="text-[0.8rem] font-semibold text-muted">{s.state ? stateLabel(s.state, lang) : t.scheme.central}</span>
-              {localName(s.slug, lang) && <span className="font-bold leading-snug text-brand">{localName(s.slug, lang)}</span>}
-              <span className="font-bold leading-snug">{s.name}</span>
+          <li key={s.slug} className="enter group relative border-b border-rule" style={{ "--i": i } as React.CSSProperties}>
+            <Link href={href} className="flex flex-col gap-0.5 py-4 pr-12 after:absolute after:inset-0 after:content-['']">
+              <span className="text-[0.8rem] font-bold uppercase tracking-wide text-muted">{s.state ? stateLabel(s.state, lang) : t.scheme.central}</span>
+              {local && <span className="font-display text-[1.3rem] leading-tight group-hover:text-accent">{local}</span>}
+              <span className={local ? "text-[0.95rem] font-semibold text-muted" : "text-[1.1rem] font-bold leading-snug group-hover:text-accent"}>{s.name}</span>
               {ready > 0 && (
-                <span className="chip mt-1 self-start bg-green-soft text-green">
-                  <Icon name="file" size={13} />
+                <span className="mt-1 inline-flex items-center gap-1.5 text-sm font-bold text-stamp">
+                  <Icon name="check" size={14} strokeWidth={3} />
                   {ready} {t.saved.docs}
                 </span>
               )}
             </Link>
-            <SaveButton slug={s.slug} name={s.name} state={s.state} href={href} labels={t.scheme} className="absolute right-2 top-2 z-10" />
+            <SaveButton slug={s.slug} name={s.name} state={s.state} href={href} labels={t.scheme} className="absolute right-0 top-3 z-10" />
           </li>
         );
       })}

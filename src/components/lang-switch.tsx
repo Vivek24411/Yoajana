@@ -16,7 +16,7 @@ export function LangSwitch({ lang, label }: { lang: Locale; label: string }) {
       onClick={() => {
         document.cookie = `lang=${other}; path=/; max-age=31536000; samesite=lax`;
       }}
-      className="btn btn-ghost pressable min-h-10 px-3.5 text-[16px]"
+      className="pressable rounded px-2.5 py-2 text-[16px] font-bold underline decoration-accent decoration-2 underline-offset-[6px]"
       lang={other}
     >
       {label}

@@ -109,6 +109,28 @@ export const POPULAR: Record<string, { icon: IconName; hi: { name: string; line:
   },
 };
 
+/** The one number or fact people remember a scheme by, for list rows. */
+export const FIGURE: Record<string, { hi: string; en: string }> = {
+  "pm-kisan": { hi: "₹6,000 / साल", en: "₹6,000 / yr" },
+  "pmay-g": { hi: "पक्का घर", en: "Pucca house" },
+  mgnrega: { hi: "100 दिन काम", en: "100 days work" },
+  "nsap-ignoaps": { hi: "मासिक पेंशन", en: "Monthly pension" },
+  pmuy: { hi: "मुफ़्त गैस", en: "Free LPG" },
+  ignwps: { hi: "मासिक पेंशन", en: "Monthly pension" },
+  apy: { hi: "₹1–5 हज़ार / माह", en: "₹1–5k / month" },
+  pmsby: { hi: "₹2 लाख बीमा", en: "₹2 lakh cover" },
+  pmjjby: { hi: "₹2 लाख बीमा", en: "₹2 lakh cover" },
+  pmfby: { hi: "फ़सल बीमा", en: "Crop insurance" },
+  kcc: { hi: "सस्ता कर्ज़", en: "Cheap credit" },
+  pmmvy: { hi: "₹5,000", en: "₹5,000" },
+  ssy: { hi: "बेटी की बचत", en: "Girl's savings" },
+  pmjdy: { hi: "बैंक खाता", en: "Bank account" },
+  igndps: { hi: "मासिक पेंशन", en: "Monthly pension" },
+  "pm-svanidhi": { hi: "बिना गारंटी कर्ज़", en: "No-collateral loan" },
+  pmv: { hi: "औज़ार + कर्ज़", en: "Tools + loan" },
+  nfbs: { hi: "₹20,000", en: "₹20,000" },
+};
+
 /** Order for the home page: the schemes most rural families ask about first. */
 export const POPULAR_ORDER = [
   "pm-kisan", "pmay-g", "mgnrega", "nsap-ignoaps", "pmuy", "ignwps", "apy", "pmsby", "pmjjby", "pmfby", "kcc", "pmmvy", "ssy", "pmjdy", "igndps", "pm-svanidhi", "pmv", "nfbs",

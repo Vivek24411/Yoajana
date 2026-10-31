@@ -75,8 +75,8 @@ export function Pwa({ labels }: { labels: Dictionary["status"] }) {
   return (
     <div
       role="status"
-      className={`fixed left-1/2 top-[4.5rem] z-40 flex max-w-[calc(100%-2rem)] items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-lg [animation:toast-in_300ms_var(--ease-out)_both] ${
-        online ? "bg-green text-bg" : "bg-text text-bg"
+      className={`fixed left-1/2 top-[4.5rem] z-40 flex max-w-[calc(100%-2rem)] items-center gap-2 rounded-md px-4 py-2 text-sm font-bold [animation:toast-in_300ms_var(--ease-out)_both] ${
+        online ? "bg-stamp text-paper" : "bg-ink text-paper"
       }`}
       style={{ transform: "translateX(-50%)" }}
     >

@@ -42,7 +42,7 @@ export function SettingsMenu({ t }: { t: Dictionary }) {
         aria-label={s.open}
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="pressable grid size-10 place-items-center rounded-full text-text hover:bg-surface-2"
+        className="pressable grid size-10 place-items-center rounded hover:bg-paper-2"
       >
         <Icon name="type" size={22} />
       </button>
@@ -50,34 +50,34 @@ export function SettingsMenu({ t }: { t: Dictionary }) {
         <div
           role="dialog"
           aria-label={s.open}
-          className="sheet-in card absolute right-0 top-12 z-40 w-72 p-4 shadow-2xl"
+          className="sheet-in absolute right-0 top-12 z-40 w-72 border-2 border-ink bg-card p-4 shadow-[6px_6px_0_var(--ink)]"
         >
-          <p className="eyebrow mb-2">{s.textSize}</p>
-          <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-surface-2 p-1.5">
+          <p className="kicker mb-2">{s.textSize}</p>
+          <div className="grid grid-cols-3 border border-ink">
             {sizes.map((o) => (
               <button
                 key={o.v}
                 type="button"
                 aria-pressed={prefs.size === o.v}
                 onClick={() => setPref("size", o.v)}
-                className={`pressable h-12 rounded-xl font-display font-semibold ${o.px} ${
-                  prefs.size === o.v ? "bg-surface text-brand shadow-sm" : "text-muted"
+                className={`pressable h-12 border-r border-ink font-display last:border-r-0 ${o.px} ${
+                  prefs.size === o.v ? "bg-ink text-paper" : ""
                 }`}
               >
                 अ A
               </button>
             ))}
           </div>
-          <p className="eyebrow mb-2 mt-4">{s.theme}</p>
-          <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-surface-2 p-1.5">
+          <p className="kicker mb-2 mt-4">{s.theme}</p>
+          <div className="grid grid-cols-3 border border-ink">
             {themes.map((o) => (
               <button
                 key={o.v}
                 type="button"
                 aria-pressed={prefs.theme === o.v}
                 onClick={() => setPref("theme", o.v)}
-                className={`pressable flex h-14 flex-col items-center justify-center gap-0.5 rounded-xl text-sm font-semibold ${
-                  prefs.theme === o.v ? "bg-surface text-brand shadow-sm" : "text-muted"
+                className={`pressable flex h-14 flex-col items-center justify-center gap-0.5 border-r border-ink text-sm font-bold last:border-r-0 ${
+                  prefs.theme === o.v ? "bg-ink text-paper" : ""
                 }`}
               >
                 <Icon name={o.icon} size={18} />

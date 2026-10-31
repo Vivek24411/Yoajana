@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CATEGORIES, inCategory } from "@/lib/categories";
 import { formatINR, inWords } from "@/lib/format";
-import { fmt, stateLabel, type Dictionary, type Locale } from "@/lib/i18n";
+import { fmt, numeral, stateLabel, type Dictionary, type Locale } from "@/lib/i18n";
 import {
   activeMember,
   addMember,
@@ -17,6 +17,7 @@ import {
   type Relation,
 } from "@/lib/storage";
 import { CATEGORIES as SOCIAL, GENDERS, MARITAL, OCCUPATIONS, type Profile, type RuleField } from "@/lib/types";
+import { localName, POPULAR } from "@/lib/popular";
 import { Icon, type IconName } from "./icons";
 import { SchemeCard } from "./scheme-card";
 
@@ -76,7 +77,6 @@ export function FindWizard({ lang, t, states }: { lang: Locale; t: Dictionary; s
     setView("wizard");
     window.scrollTo({ top: 0 });
   };
-
   const switchTo = (id: string) => {
     setActiveMember(id);
     setStep(0);
@@ -84,14 +84,8 @@ export function FindWizard({ lang, t, states }: { lang: Locale; t: Dictionary; s
   };
 
   return (
-    <div className="flex flex-col gap-5">
-      <MemberBar
-        t={t}
-        family={family}
-        onPick={switchTo}
-        onAdd={() => setView("who")}
-        adding={shown === "who"}
-      />
+    <div className="flex flex-col gap-6">
+      <MemberBar t={t} family={family} onPick={switchTo} onAdd={() => setView("who")} adding={shown === "who"} />
       {shown === "who" ? (
         <WhoPicker
           t={t}
@@ -108,10 +102,12 @@ export function FindWizard({ lang, t, states }: { lang: Locale; t: Dictionary; s
           lang={lang}
           t={t}
           profile={profile}
-          who={memberLabel(member, family.members, t.relations)}
+          title={member.relation === "self" ? t.find.results : fmt(t.find.resultsFor, { who: memberLabel(member, family.members, t.relations) })}
           onEdit={editAt}
           onReset={() => {
-            if (!window.confirm(fmt(t.find.confirmReset, { who: memberLabel(member, family.members, t.relations) }))) return;
+            const question =
+              member.relation === "self" ? t.find.confirmResetSelf : fmt(t.find.confirmReset, { who: memberLabel(member, family.members, t.relations) });
+            if (!window.confirm(question)) return;
             resetActiveProfile();
             setStep(0);
             setView("wizard");
@@ -140,37 +136,19 @@ function MemberBar({
   adding: boolean;
 }) {
   return (
-    <div className="enter -mx-4">
-      <p className="eyebrow mb-2 px-4">{t.find.forWho}</p>
-      <ul className="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-1">
-        {family.members.map((m) => {
-          const on = m.id === family.active && !adding;
-          return (
-            <li key={m.id}>
-              <button
-                type="button"
-                aria-pressed={on}
-                onClick={() => onPick(m.id)}
-                className={`pressable chip h-11 whitespace-nowrap border px-4 text-[0.95rem] ${
-                  on ? "border-brand bg-brand text-brand-ink" : "border-border-strong bg-surface"
-                }`}
-              >
-                <Icon name="user" size={17} />
-                {memberLabel(m, family.members, t.relations)}
-              </button>
-            </li>
-          );
-        })}
+    <div className="enter -mx-4 flex items-center gap-3 border-b border-rule px-4">
+      <span className="flex-none text-sm font-bold text-muted">{t.find.forWho}</span>
+      <ul className="no-scrollbar flex flex-1 gap-5 overflow-x-auto">
+        {family.members.map((m) => (
+          <li key={m.id}>
+            <button type="button" aria-pressed={m.id === family.active && !adding} onClick={() => onPick(m.id)} className="tab">
+              {memberLabel(m, family.members, t.relations)}
+            </button>
+          </li>
+        ))}
         <li>
-          <button
-            type="button"
-            aria-pressed={adding}
-            onClick={onAdd}
-            className={`pressable chip h-11 whitespace-nowrap border border-dashed px-4 text-[0.95rem] ${
-              adding ? "border-brand bg-brand-soft text-brand" : "border-border-strong text-muted"
-            }`}
-          >
-            <Icon name="userPlus" size={17} />
+          <button type="button" aria-pressed={adding} onClick={onAdd} className="tab inline-flex items-center gap-1 text-accent">
+            <Icon name="plus" size={16} strokeWidth={2.5} />
             {t.find.addMember}
           </button>
         </li>
@@ -179,25 +157,19 @@ function MemberBar({
   );
 }
 
-const RELATION_ICONS: Record<Relation, IconName> = {
-  self: "user", mother: "user", father: "user", wife: "user", husband: "user", son: "user", daughter: "user", grandparent: "elder", other: "users",
-};
-
 function WhoPicker({ t, onPick, onCancel }: { t: Dictionary; onPick: (r: Relation) => void; onCancel: () => void }) {
   return (
     <section className="step-next flex flex-col gap-4">
-      <h1 className="font-display text-[1.75rem] font-semibold leading-tight">{t.find.whoIsThis}</h1>
-      <div className="grid grid-cols-2 gap-2.5">
-        {RELATIONS.filter((r) => r !== "self").map((r, i) => (
-          <button key={r} type="button" onClick={() => onPick(r)} className="option pressable enter" style={{ "--i": i } as React.CSSProperties}>
-            <span className="option-icon">
-              <Icon name={RELATION_ICONS[r]} size={22} />
-            </span>
-            {t.relations[r]}
+      <h1 className="font-display text-[2.1rem] leading-tight">{t.find.whoIsThis}</h1>
+      <div className="grid grid-cols-2 gap-x-6 border-t border-rule">
+        {RELATIONS.filter((r) => r !== "self").map((r) => (
+          <button key={r} type="button" onClick={() => onPick(r)} className="choice pressable">
+            <span className="flex-1">{t.relations[r]}</span>
+            <Icon name="arrowRight" size={18} className="text-muted" />
           </button>
         ))}
       </div>
-      <button type="button" onClick={onCancel} className="btn btn-ghost pressable self-start">
+      <button type="button" onClick={onCancel} className="btn btn-line pressable self-start">
         <Icon name="arrowLeft" size={18} />
         {t.find.back}
       </button>
@@ -243,7 +215,7 @@ function Wizard({
   const pickAndAdvance = <K extends keyof Profile>(key: K, value: Profile[K]) => {
     set(key, value);
     clearTimeout(timer.current);
-    if (value !== undefined) timer.current = setTimeout(next, 280);
+    if (value !== undefined) timer.current = setTimeout(next, 300);
   };
   const skip = () => {
     if (id !== "extra") set(id as keyof Profile, undefined);
@@ -252,28 +224,22 @@ function Wizard({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2.5">
-        <div className="flex items-center justify-between text-sm font-semibold text-muted">
-          <span>
-            {f.step} <b className="text-text tabular-nums">{step + 1}</b> {f.of} {STEPS.length}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="kicker">
+            {f.step} {numeral(step + 1, lang, 1)} / {numeral(STEPS.length, lang, 1)}
           </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Icon name="shield" size={15} />
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted">
+            <Icon name="shield" size={14} />
             {f.savedNote}
           </span>
         </div>
-        <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${STEPS.length}, 1fr)` }} aria-hidden>
+        <div className="flex gap-1" aria-hidden>
           {STEPS.map((s, i) => (
-            <button
-              key={s}
-              type="button"
-              tabIndex={-1}
-              onClick={() => go(i)}
-              className="h-1.5 overflow-hidden rounded-full bg-border"
-            >
+            <button key={s} type="button" tabIndex={-1} onClick={() => go(i)} className="h-[5px] flex-1 bg-paper-2">
               <span
-                className="block h-full rounded-full bg-brand transition-transform duration-500 ease-[var(--ease-out)]"
-                style={{ transform: `scaleX(${i <= step ? 1 : 0})`, transformOrigin: "left", transitionDelay: i === step ? "120ms" : "0ms" }}
+                className="block h-full origin-left bg-ink transition-transform duration-500 ease-[var(--ease-out)]"
+                style={{ transform: `scaleX(${i <= step ? 1 : 0})`, transitionDelay: i === step ? "100ms" : "0ms", background: i === step ? "var(--accent)" : undefined }}
               />
             </button>
           ))}
@@ -282,37 +248,22 @@ function Wizard({
 
       <fieldset key={id} className={`flex flex-col gap-4 ${dir === "next" ? "step-next" : "step-prev"}`}>
         <legend className="contents">
-          <span className="block font-display text-[1.85rem] font-semibold leading-tight text-balance">{f.q[id]}</span>
+          <span className="block font-display text-[2.15rem] leading-[1.1] text-balance">{f.q[id]}</span>
         </legend>
-        <p className="-mt-2 flex items-start gap-2 text-[0.98rem] text-muted">
-          <Icon name="info" size={18} className="mt-1 flex-none" />
-          {f.hints[id]}
-        </p>
+        <p className="-mt-1 text-[0.98rem] leading-snug text-muted">{f.hints[id]}</p>
 
         {id === "state" && <StatePicker t={t} states={states} value={profile.state} onPick={(v) => pickAndAdvance("state", v)} />}
 
         {id === "age" && (
-          <Stepper value={profile.age} min={0} max={120} step={1} unit={t.common.years} placeholder={f.agePlaceholder} onChange={(v) => set("age", v)} onEnter={next} />
+          <Stepper value={profile.age} min={0} max={120} unit={t.common.years} placeholder={f.agePlaceholder} onChange={(v) => set("age", v)} onEnter={next} />
         )}
 
         {id === "gender" && (
-          <Choices
-            options={GENDERS}
-            labels={t.options.gender}
-            icons={{ male: "user", female: "user", transgender: "users" }}
-            value={profile.gender}
-            onChange={(v) => pickAndAdvance("gender", v)}
-          />
+          <Choices options={GENDERS} labels={t.options.gender} value={profile.gender} onChange={(v) => pickAndAdvance("gender", v)} />
         )}
 
         {id === "category" && (
-          <Choices
-            options={SOCIAL}
-            labels={t.options.category}
-            badges={{ GEN: "GEN", OBC: "OBC", SC: "SC", ST: "ST", EWS: "EWS" }}
-            value={profile.category}
-            onChange={(v) => pickAndAdvance("category", v)}
-          />
+          <Choices options={SOCIAL} labels={t.options.category} value={profile.category} onChange={(v) => pickAndAdvance("category", v)} />
         )}
 
         {id === "area" && (
@@ -322,13 +273,12 @@ function Wizard({
             icons={{ rural: "village", urban: "city" }}
             value={profile.area}
             onChange={(v) => pickAndAdvance("area", v)}
-            big
           />
         )}
 
         {id === "occupation" && (
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-            {OCCUPATIONS.map((o, i) => {
+          <div className="grid grid-cols-1 border-t border-rule sm:grid-cols-2 sm:gap-x-6">
+            {OCCUPATIONS.map((o) => {
               const on = profile.occupation?.includes(o) ?? false;
               return (
                 <button
@@ -339,14 +289,11 @@ function Wizard({
                     const list = on ? profile.occupation?.filter((x) => x !== o) : [...(profile.occupation ?? []), o];
                     set("occupation", list?.length ? list : undefined);
                   }}
-                  className="option pressable enter"
-                  style={{ "--i": i } as React.CSSProperties}
+                  className="choice"
                 >
-                  <span className="option-icon">
-                    <Icon name={OCCUPATION_ICONS[o]} size={22} />
-                  </span>
+                  <span className="box">{on && <Icon name="check" size={15} strokeWidth={3} className="check-draw" />}</span>
                   <span className="flex-1">{t.options.occupation[o]}</span>
-                  <Tick on={on} square />
+                  <Icon name={OCCUPATION_ICONS[o]} size={22} className={on ? "text-accent" : "text-muted"} />
                 </button>
               );
             })}
@@ -357,21 +304,18 @@ function Wizard({
 
         {id === "disability" && (
           <>
-            <div className="grid grid-cols-2 gap-2.5">
-              <button type="button" aria-pressed={profile.disability === 0} className="option pressable justify-center" onClick={() => pickAndAdvance("disability", 0)}>
+            <div className="border-t border-rule">
+              <button type="button" aria-pressed={profile.disability === 0} className="choice" onClick={() => pickAndAdvance("disability", 0)}>
+                <span className="radio" />
                 {f.no}
               </button>
-              <button
-                type="button"
-                aria-pressed={(profile.disability ?? 0) > 0}
-                className="option pressable justify-center"
-                onClick={() => set("disability", profile.disability || 40)}
-              >
+              <button type="button" aria-pressed={(profile.disability ?? 0) > 0} className="choice" onClick={() => set("disability", profile.disability || 40)}>
+                <span className="radio" />
                 {f.yes}
               </button>
             </div>
             {(profile.disability ?? 0) > 0 && (
-              <div className="card enter flex flex-col gap-3 p-4">
+              <div className="enter flex flex-col gap-2 pt-2">
                 <span className="text-muted">{f.disabilityPercent}</span>
                 <div className="flex items-center gap-4">
                   <input
@@ -381,10 +325,10 @@ function Wizard({
                     step={5}
                     value={profile.disability}
                     onChange={(e) => set("disability", Number(e.target.value))}
-                    className="h-2 flex-1 cursor-pointer accent-[var(--brand)]"
+                    className="h-2 flex-1 cursor-pointer accent-[var(--accent)]"
                     aria-label={f.disabilityPercent}
                   />
-                  <span className="w-16 text-right font-display text-3xl font-semibold tabular-nums text-brand">{profile.disability}%</span>
+                  <span className="w-20 text-right font-display text-4xl tabular-nums">{profile.disability}%</span>
                 </div>
               </div>
             )}
@@ -392,14 +336,14 @@ function Wizard({
         )}
 
         {id === "extra" && (
-          <div className="flex flex-col gap-2.5">
-            {EXTRA_FIELDS.filter((k) => k !== "pregnant" || profile.gender === "female").map((k, i) => (
-              <div key={k} className="card enter flex flex-col gap-3 p-4" style={{ "--i": i } as React.CSSProperties}>
+          <div className="flex flex-col border-t border-rule">
+            {EXTRA_FIELDS.filter((k) => k !== "pregnant" || profile.gender === "female").map((k) => (
+              <div key={k} className="flex flex-col gap-2.5 border-b border-rule py-4 sm:flex-row sm:items-center sm:justify-between">
                 <span className="font-semibold leading-snug">{t.options.extra[k]}</span>
                 <YesNo t={t} value={profile[k]} onChange={(v) => set(k, v)} />
               </div>
             ))}
-            <div className="card enter flex flex-col gap-3 p-4" style={{ "--i": 6 } as React.CSSProperties}>
+            <div className="flex flex-col gap-2.5 py-4">
               <span className="font-semibold">{t.options.extra.maritalStatus}</span>
               <div className="flex flex-wrap gap-2">
                 {MARITAL.map((m) => {
@@ -410,7 +354,7 @@ function Wizard({
                       type="button"
                       aria-pressed={on}
                       onClick={() => set("maritalStatus", on ? undefined : m)}
-                      className={`pressable chip h-11 border px-4 text-[0.95rem] ${on ? "border-brand bg-brand text-brand-ink" : "border-border-strong"}`}
+                      className={`pressable h-11 rounded-md border-[1.5px] border-ink px-4 text-[0.95rem] font-bold ${on ? "bg-ink text-paper" : ""}`}
                     >
                       {t.options.maritalStatus[m]}
                     </button>
@@ -422,22 +366,22 @@ function Wizard({
         )}
       </fieldset>
 
-      <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 -mx-4 mt-2 flex items-center gap-2 border-t border-border/70 bg-bg/90 px-4 py-3 backdrop-blur-xl sm:bottom-0">
+      <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-10 -mx-4 flex items-center gap-2 border-t-2 border-ink bg-paper/95 px-4 py-3 backdrop-blur-md sm:bottom-0">
         <button
           type="button"
           disabled={step === 0}
           onClick={() => go(step - 1)}
           aria-label={f.back}
-          className="pressable grid size-14 flex-none place-items-center rounded-full border-[1.5px] border-border-strong disabled:opacity-30"
+          className="pressable grid size-13 flex-none place-items-center rounded-md border-[1.5px] border-ink disabled:opacity-25"
         >
           <Icon name="arrowLeft" size={22} />
         </button>
         {!last && (
-          <button type="button" onClick={skip} className="pressable rounded-full px-3 py-3 text-[0.95rem] font-semibold text-muted">
+          <button type="button" onClick={skip} className="pressable px-3 py-3 text-[0.95rem] font-bold text-muted underline decoration-rule decoration-2 underline-offset-4">
             {f.skip}
           </button>
         )}
-        <button type="button" onClick={next} className="btn btn-primary pressable ml-auto h-14 px-6 text-[1.05rem]">
+        <button type="button" onClick={next} className="btn btn-ink pressable ml-auto h-13 px-6 text-[1.05rem]">
           {last ? f.seeResults : f.next}
           <Icon name={last ? "check" : "arrowRight"} size={20} />
         </button>
@@ -446,56 +390,28 @@ function Wizard({
   );
 }
 
-function Tick({ on, square = false }: { on: boolean; square?: boolean }) {
-  return (
-    <span
-      className={`grid size-6 flex-none place-items-center border-2 transition-colors duration-200 ${square ? "rounded-md" : "rounded-full"} ${
-        on ? "border-brand bg-brand text-brand-ink" : "border-border-strong"
-      }`}
-    >
-      {on && <Icon name="check" size={14} strokeWidth={3} className="check-draw" />}
-    </span>
-  );
-}
-
 function Choices<T extends string>({
   options,
   labels,
   icons,
-  badges,
   value,
   onChange,
-  big = false,
 }: {
   options: readonly T[];
   labels: Record<T, string>;
   icons?: Record<T, IconName>;
-  badges?: Record<T, string>;
   value?: T;
   onChange: (v: T | undefined) => void;
-  big?: boolean;
 }) {
   return (
-    <div className={`grid gap-2.5 ${big ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2"}`}>
-      {options.map((o, i) => {
+    <div className="border-t border-rule">
+      {options.map((o) => {
         const on = value === o;
         return (
-          <button
-            key={o}
-            type="button"
-            aria-pressed={on}
-            onClick={() => onChange(on ? undefined : o)}
-            className={`option pressable enter ${big ? "min-h-36 flex-col justify-center text-center" : ""}`}
-            style={{ "--i": i } as React.CSSProperties}
-          >
-            {icons && (
-              <span className={`option-icon ${big ? "size-16 rounded-2xl" : ""}`}>
-                <Icon name={icons[o]} size={big ? 34 : 22} />
-              </span>
-            )}
-            {badges && <span className="option-icon text-[0.8rem] font-bold">{badges[o]}</span>}
-            <span className={big ? "" : "flex-1"}>{labels[o]}</span>
-            {!big && <Tick on={on} />}
+          <button key={o} type="button" aria-pressed={on} onClick={() => onChange(on ? undefined : o)} className="choice">
+            <span className="radio" />
+            <span className="flex-1 text-[1.08rem]">{labels[o]}</span>
+            {icons && <Icon name={icons[o]} size={26} className={on ? "text-accent" : "text-muted"} />}
           </button>
         );
       })}
@@ -505,7 +421,7 @@ function Choices<T extends string>({
 
 function YesNo({ t, value, onChange }: { t: Dictionary; value?: boolean; onChange: (v: boolean | undefined) => void }) {
   return (
-    <div className="grid grid-cols-2 gap-1.5 rounded-2xl bg-surface-2 p-1.5">
+    <div className="flex flex-none gap-2">
       {[true, false].map((v) => {
         const on = value === v;
         return (
@@ -514,7 +430,7 @@ function YesNo({ t, value, onChange }: { t: Dictionary; value?: boolean; onChang
             type="button"
             aria-pressed={on}
             onClick={() => onChange(on ? undefined : v)}
-            className={`pressable h-11 rounded-xl font-semibold ${on ? "bg-surface text-brand shadow-sm ring-1 ring-brand" : "text-muted"}`}
+            className={`pressable h-11 min-w-20 rounded-md border-[1.5px] border-ink px-4 font-bold ${on ? "bg-ink text-paper" : ""}`}
           >
             {v ? t.find.yes : t.find.no}
           </button>
@@ -541,27 +457,24 @@ function StatePicker({
     return needle ? states.filter((s) => `${s.label} ${s.value}`.toLowerCase().includes(needle)) : states;
   }, [q, states]);
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <div className="relative">
-        <Icon name="search" size={20} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.find.searchState} aria-label={t.find.searchState} className="field rounded-full pl-12" />
+        <Icon name="search" size={20} className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 text-muted" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.find.searchState} aria-label={t.find.searchState} className="field pl-9" />
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        {list.map((s) => {
-          const on = value === s.value;
-          return (
-            <button
-              key={s.value}
-              type="button"
-              aria-pressed={on}
-              onClick={() => onPick(on ? undefined : s.value)}
-              className="option pressable min-h-14 px-3.5 py-2.5 text-[0.98rem] leading-tight"
-            >
-              <span className="flex-1">{s.label}</span>
-              {on && <Tick on />}
-            </button>
-          );
-        })}
+      <div className="grid grid-cols-2 gap-x-5">
+        {list.map((s) => (
+          <button
+            key={s.value}
+            type="button"
+            aria-pressed={value === s.value}
+            onClick={() => onPick(value === s.value ? undefined : s.value)}
+            className="choice min-h-13 gap-2.5 py-2 text-[0.98rem] leading-tight"
+          >
+            <span className="radio size-5" />
+            <span className="flex-1">{s.label}</span>
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -571,7 +484,6 @@ function Stepper({
   value,
   min,
   max,
-  step,
   unit,
   placeholder,
   onChange,
@@ -580,7 +492,6 @@ function Stepper({
   value?: number;
   min: number;
   max: number;
-  step: number;
   unit: string;
   placeholder: string;
   onChange: (v: number | undefined) => void;
@@ -588,12 +499,12 @@ function Stepper({
 }) {
   const clamp = (n: number) => Math.min(max, Math.max(min, n));
   return (
-    <div className="card flex items-center gap-3 p-3">
+    <div className="flex items-center gap-3 border-y-2 border-ink py-4">
       <button
         type="button"
         aria-label="−"
-        onClick={() => onChange(clamp((value ?? 30) - step))}
-        className="pressable grid size-14 flex-none place-items-center rounded-2xl bg-surface-2"
+        onClick={() => onChange(clamp((value ?? 30) - 1))}
+        className="pressable grid size-14 flex-none place-items-center rounded-md border-[1.5px] border-ink"
       >
         <Icon name="minus" size={24} />
       </button>
@@ -610,15 +521,15 @@ function Stepper({
             onChange(digits ? clamp(Number(digits)) : undefined);
           }}
           onKeyDown={(e) => e.key === "Enter" && onEnter()}
-          className="w-24 bg-transparent text-center font-display text-5xl font-semibold tabular-nums outline-none placeholder:text-2xl placeholder:text-muted/60"
+          className="w-28 bg-transparent text-center font-display text-6xl tabular-nums outline-none placeholder:font-sans placeholder:text-xl placeholder:text-muted/60"
         />
-        <span className="text-muted">{unit}</span>
+        <span className="font-bold text-muted">{unit}</span>
       </label>
       <button
         type="button"
         aria-label="+"
-        onClick={() => onChange(clamp((value ?? 29) + step))}
-        className="pressable grid size-14 flex-none place-items-center rounded-2xl bg-surface-2"
+        onClick={() => onChange(clamp((value ?? 29) + 1))}
+        className="pressable grid size-14 flex-none place-items-center rounded-md border-[1.5px] border-ink"
       >
         <Icon name="plus" size={24} />
       </button>
@@ -640,10 +551,10 @@ function IncomeInput({
   onEnter: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-3">
-      <div className="card flex flex-col gap-1 p-4">
-        <label className="flex items-baseline gap-2">
-          <span className="font-display text-4xl font-semibold text-muted">₹</span>
+    <div className="flex flex-col gap-4">
+      <div>
+        <label className="flex items-baseline gap-2 border-b-2 border-ink pb-1 focus-within:border-accent">
+          <span className="font-display text-4xl text-muted">₹</span>
           <input
             type="text"
             inputMode="numeric"
@@ -655,14 +566,14 @@ function IncomeInput({
               onChange(digits ? Math.min(Number(digits), 100000000) : undefined);
             }}
             onKeyDown={(e) => e.key === "Enter" && onEnter()}
-            className="min-w-0 flex-1 bg-transparent font-display text-4xl font-semibold tabular-nums outline-none placeholder:text-xl placeholder:text-muted/60"
+            className="min-w-0 flex-1 bg-transparent font-display text-5xl tabular-nums outline-none placeholder:font-sans placeholder:text-xl placeholder:text-muted/60"
           />
         </label>
-        <p className="h-6 text-[0.95rem] font-semibold text-brand" aria-live="polite">
+        <p className="mt-1.5 h-6 font-bold text-accent" aria-live="polite">
           {value ? `${inWords(value, lang)} · ${t.find.perYear}` : ""}
         </p>
       </div>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 border-l border-t border-ink">
         {INCOME_PRESETS.map((n) => {
           const on = value === n;
           return (
@@ -671,7 +582,7 @@ function IncomeInput({
               type="button"
               aria-pressed={on}
               onClick={() => onChange(n)}
-              className={`pressable h-12 rounded-xl border text-[0.92rem] font-semibold ${on ? "border-brand bg-brand text-brand-ink" : "border-border-strong bg-surface"}`}
+              className={`pressable h-12 border-b border-r border-ink text-[0.92rem] font-bold ${on ? "bg-ink text-paper" : "hover:bg-paper-2"}`}
             >
               {n >= 100000 ? inWords(n, lang) : formatINR(n)}
             </button>
@@ -705,14 +616,14 @@ function Results({
   lang,
   t,
   profile,
-  who,
+  title,
   onEdit,
   onReset,
 }: {
   lang: Locale;
   t: Dictionary;
   profile: Profile;
-  who: string;
+  title: string;
   onEdit: (id: StepId) => void;
   onReset: () => void;
 }) {
@@ -776,44 +687,43 @@ function Results({
   ].filter(Boolean) as { id: StepId; label: string }[];
 
   return (
-    <div className="flex flex-col gap-5">
-      <section className="enter relative overflow-hidden rounded-[1.5rem] bg-hero p-5 text-hero-ink">
-        <div aria-hidden className="absolute -right-10 -top-10 size-44 rounded-full bg-accent/20 blur-3xl" />
-        <p className="relative font-semibold text-hero-ink/80">{fmt(f.resultsFor, { who })}</p>
+    <div className="flex flex-col gap-6">
+      <section className="enter flex flex-col">
+        <p className="kicker">{title}</p>
         {data ? (
-          <div className="relative mt-1 flex items-end gap-3">
-            <span className="font-display text-[4.5rem] font-semibold leading-none tabular-nums text-accent">{eligibleCount}</span>
-            <span className="pb-2 text-lg font-semibold leading-tight">{f.eligibleHero}</span>
+          <div className="mt-2 flex items-end gap-4">
+            <span className="font-display text-[5.5rem] leading-[0.8] tabular-nums">{eligibleCount}</span>
+            <span className="min-w-0 flex-1 pb-1 text-lg font-bold leading-tight">{f.eligibleHero}</span>
+            {data.counts.eligible > 0 && <span className="stamp stamp-in mb-3">{t.stamp.eligible}</span>}
           </div>
         ) : failed ? null : (
-          <div className="relative mt-3 flex items-center gap-3">
-            <Icon name="refresh" size={28} className="spin text-accent" />
-            <span className="font-semibold">{f.loading}</span>
+          <div className="mt-3 flex items-center gap-3 text-muted">
+            <Icon name="refresh" size={24} className="spin text-accent" />
+            <span className="font-bold">{f.loading}</span>
           </div>
         )}
-        {data && data.counts.maybe > 0 && <p className="relative mt-1 text-hero-ink/75">{fmt(f.maybeHero, { n: data.counts.maybe })}</p>}
+        {data && data.counts.maybe > 0 && <p className="mt-2 text-muted">{fmt(f.maybeHero, { n: data.counts.maybe })}</p>}
         {answerChips.length > 0 && (
-          <ul className="relative mt-4 flex flex-wrap gap-1.5">
-            {answerChips.map((c) => (
-              <li key={c.id}>
-                <button
-                  type="button"
-                  onClick={() => onEdit(c.id)}
-                  className="pressable chip max-w-[16rem] bg-hero-ink/10 py-1.5 text-hero-ink hover:bg-hero-ink/20"
-                >
-                  <span className="truncate">{c.label}</span>
-                  <Icon name="pencil" size={13} className="flex-none opacity-70" />
+          <p className="mt-4 border-t border-rule pt-3 text-[0.95rem] leading-loose">
+            {answerChips.map((c, i) => (
+              <span key={c.id}>
+                {i > 0 && <span className="mx-1.5 text-rule">/</span>}
+                <button type="button" onClick={() => onEdit(c.id)} className="font-semibold underline decoration-rule decoration-2 underline-offset-4 hover:decoration-accent">
+                  {c.label}
                 </button>
-              </li>
+              </span>
             ))}
-          </ul>
+            <button type="button" onClick={() => onEdit("state")} aria-label={f.edit} className="ml-2 inline-flex translate-y-0.5 text-accent">
+              <Icon name="pencil" size={16} />
+            </button>
+          </p>
         )}
       </section>
 
       {failed && (
-        <div className="card flex flex-col items-start gap-3 border-danger/40 bg-danger-soft p-5">
-          <p className="font-semibold text-danger">{t.chat.error}</p>
-          <button type="button" onClick={() => setAttempt((a) => a + 1)} className="btn btn-ghost pressable min-h-11 bg-surface text-base">
+        <div className="notice flex flex-col items-start gap-3">
+          <p className="font-bold text-accent">{t.chat.error}</p>
+          <button type="button" onClick={() => setAttempt((a) => a + 1)} className="btn btn-ink pressable">
             <Icon name="refresh" size={18} />
             {t.chat.retry}
           </button>
@@ -822,7 +732,7 @@ function Results({
 
       {data && (
         <>
-          <div role="tablist" className="enter grid grid-cols-3 gap-1 rounded-2xl bg-surface-2 p-1.5" style={{ "--i": 1 } as React.CSSProperties}>
+          <div role="tablist" className="enter grid grid-cols-3 border-y-2 border-ink" style={{ "--i": 1 } as React.CSSProperties}>
             {(["eligible", "maybe", "general"] as const).map((g) => {
               const on = tab === g;
               return (
@@ -836,31 +746,27 @@ function Results({
                     setCat(null);
                     setShownCount(20);
                   }}
-                  className={`pressable flex flex-col items-center rounded-xl py-2 text-[0.92rem] font-semibold leading-tight ${
-                    on ? "bg-surface text-text shadow-sm" : "text-muted"
-                  }`}
+                  className={`pressable flex flex-col items-center border-r border-ink py-2.5 leading-tight last:border-r-0 ${on ? "bg-ink text-paper" : ""}`}
                 >
-                  <span className={`font-display text-xl tabular-nums ${on ? (g === "eligible" ? "text-green" : g === "maybe" ? "text-amber" : "text-text") : ""}`}>
-                    {data.counts[g]}
-                  </span>
-                  {f.tabs[g]}
+                  <span className="font-display text-2xl tabular-nums">{data.counts[g]}</span>
+                  <span className="text-[0.9rem] font-bold">{f.tabs[g]}</span>
                 </button>
               );
             })}
           </div>
 
-          <p key={tab} className="fade-in -mt-2 text-[0.95rem] text-muted">{f.tabHints[tab]}</p>
+          <p key={tab} className="fade-in -mt-3 text-[0.95rem] text-muted">{f.tabHints[tab]}</p>
 
           {tab === "maybe" && missing.length > 0 && (
-            <div className="card flex flex-col gap-2.5 border-amber/40 bg-amber-soft p-4">
-              <p className="font-semibold">{f.needInfo}:</p>
-              <div className="flex flex-wrap gap-2">
+            <div className="border-l-4 border-ochre pl-4">
+              <p className="font-bold">{f.needInfo}:</p>
+              <div className="mt-2 flex flex-wrap gap-2">
                 {missing.map((m) => (
                   <button
                     key={m}
                     type="button"
                     onClick={() => onEdit(STEP_FOR[m] ?? "extra")}
-                    className="pressable chip h-10 border border-amber/50 bg-surface px-3.5 text-[0.92rem]"
+                    className="pressable inline-flex h-10 items-center gap-1.5 rounded-md border-[1.5px] border-ink px-3 text-[0.92rem] font-bold hover:bg-ink hover:text-paper"
                   >
                     {t.fields[m]}
                     <Icon name="arrowRight" size={15} />
@@ -871,34 +777,21 @@ function Results({
           )}
 
           {inTab.length > 8 && (
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-1">
               <div className="relative">
-                <Icon name="search" size={20} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
-                <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={f.filter} aria-label={f.filter} className="field rounded-full pl-12" />
+                <Icon name="search" size={20} className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 text-muted" />
+                <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={f.filter} aria-label={f.filter} className="field pl-9" />
               </div>
               {cats.length > 1 && (
-                <ul className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+                <ul className="no-scrollbar -mx-4 flex gap-5 overflow-x-auto border-b border-rule px-4">
                   <li>
-                    <button
-                      type="button"
-                      aria-pressed={!cat}
-                      onClick={() => setCat(null)}
-                      className={`pressable chip h-10 whitespace-nowrap border px-4 text-[0.9rem] ${!cat ? "border-brand bg-brand text-brand-ink" : "border-border-strong bg-surface"}`}
-                    >
+                    <button type="button" aria-pressed={!cat} onClick={() => setCat(null)} className="tab">
                       {f.allTopics}
                     </button>
                   </li>
                   {cats.map((c) => (
                     <li key={c.id}>
-                      <button
-                        type="button"
-                        aria-pressed={cat === c.id}
-                        onClick={() => setCat(cat === c.id ? null : c.id)}
-                        className={`pressable chip h-10 whitespace-nowrap border px-3.5 text-[0.9rem] ${
-                          cat === c.id ? "border-brand bg-brand text-brand-ink" : "border-border-strong bg-surface"
-                        }`}
-                      >
-                        <Icon name={c.icon} size={16} />
+                      <button type="button" aria-pressed={cat === c.id} onClick={() => setCat(cat === c.id ? null : c.id)} className="tab">
                         {c.label[lang]}
                       </button>
                     </li>
@@ -909,9 +802,9 @@ function Results({
           )}
 
           {filtered.length === 0 ? (
-            <p className="card p-6 text-center text-muted">{f.noneFound}</p>
+            <p className="py-6 text-muted">{f.noneFound}</p>
           ) : (
-            <ul key={`${tab}-${cat}`} className="flex flex-col gap-3">
+            <ul key={`${tab}-${cat}`} className="-mt-2">
               {filtered.slice(0, shownCount).map((r, i) => (
                 <SchemeCard
                   key={r.slug}
@@ -919,26 +812,26 @@ function Results({
                   href={`/${lang}/schemes/${r.slug}`}
                   slug={r.slug}
                   name={r.name}
+                  localName={localName(r.slug, lang)}
                   state={r.state}
                   place={r.state ? stateLabel(r.state, lang) : t.scheme.central}
-                  summary={r.summary}
-                  tags={r.tags}
+                  summary={POPULAR[r.slug]?.[lang].line ?? r.summary}
                   reviewed={r.reviewed}
                   reviewedLabel={t.scheme.reviewed}
                   saveLabels={{ save: t.scheme.save, saved: t.scheme.saved }}
                 >
                   {(r.matched.some((m) => m !== "state") || r.unknown.length > 0) && (
-                    <span className="mt-2.5 flex flex-wrap gap-1.5">
+                    <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[0.82rem] font-bold">
                       {r.matched
                         .filter((m) => m !== "state")
                         .map((m) => (
-                          <span key={m} className="chip bg-green-soft text-green">
-                            <Icon name="check" size={13} strokeWidth={2.75} />
+                          <span key={m} className="inline-flex items-center gap-1 text-stamp">
+                            <Icon name="check" size={13} strokeWidth={3} />
                             {t.fields[m]}
                           </span>
                         ))}
                       {r.unknown.map((m) => (
-                        <span key={m} className="chip border border-dashed border-amber/60 text-amber">
+                        <span key={m} className="text-ochre">
                           ? {t.fields[m]}
                         </span>
                       ))}
@@ -950,7 +843,7 @@ function Results({
           )}
 
           {filtered.length > shownCount && (
-            <button type="button" onClick={() => setShownCount((s) => s + 30)} className="btn btn-ghost pressable w-full">
+            <button type="button" onClick={() => setShownCount((s) => s + 30)} className="btn btn-line pressable w-full">
               {f.showMore} ({filtered.length - shownCount})
               <Icon name="chevronDown" size={18} />
             </button>
@@ -958,12 +851,12 @@ function Results({
 
           <div className="mt-2 flex flex-col gap-2 sm:flex-row">
             {data.counts.eligible > 0 && (
-              <button type="button" onClick={share} className="btn btn-primary pressable flex-1">
+              <button type="button" onClick={share} className="btn btn-accent pressable flex-1">
                 <Icon name="share" size={19} />
                 {f.share}
               </button>
             )}
-            <button type="button" onClick={() => onEdit("state")} className="btn btn-ghost pressable flex-1">
+            <button type="button" onClick={() => onEdit("state")} className="btn btn-line pressable flex-1">
               <Icon name="pencil" size={18} />
               {f.edit}
             </button>

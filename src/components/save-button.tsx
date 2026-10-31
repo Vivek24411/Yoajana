@@ -34,15 +34,15 @@ export function SaveButton({
         type="button"
         onClick={onClick}
         aria-pressed={saved}
-        className={`pressable inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold ${
-          saved ? "border-accent bg-accent-soft text-text" : "border-border-strong text-text hover:bg-surface-2"
+        className={`pressable inline-flex h-10 items-center gap-2 rounded-md border-[1.5px] px-3 text-[0.95rem] font-bold ${
+          saved ? "border-accent bg-accent text-paper" : "border-ink hover:bg-paper-2"
         } ${className}`}
       >
         <Icon
           key={String(saved)}
           name="bookmark"
           size={18}
-          className={saved ? "pop text-accent" : ""}
+          className={saved ? "pop" : ""}
           fill={saved ? "currentColor" : "none"}
         />
         {saved ? labels.saved : labels.save}
@@ -57,7 +57,7 @@ export function SaveButton({
       aria-pressed={saved}
       aria-label={saved ? labels.saved : labels.save}
       title={saved ? labels.saved : labels.save}
-      className={`pressable grid size-11 place-items-center rounded-full ${saved ? "text-accent" : "text-muted hover:bg-surface-2"} ${className}`}
+      className={`pressable grid size-11 place-items-center rounded ${saved ? "text-accent" : "text-muted hover:text-ink"} ${className}`}
     >
       <Icon key={String(saved)} name="bookmark" size={21} className={saved ? "pop" : ""} fill={saved ? "currentColor" : "none"} />
     </button>

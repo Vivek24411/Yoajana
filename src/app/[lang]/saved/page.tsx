@@ -14,7 +14,7 @@ export default async function SavedPage({ params }: PageProps<"/[lang]/saved">) 
   const t = getDictionary(lang);
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="enter font-display text-[2rem] font-semibold leading-tight">{t.saved.title}</h1>
+      <h1 className="enter font-display text-[2.4rem] leading-tight">{t.saved.title}</h1>
       <SavedList lang={lang} t={t} />
     </div>
   );

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Noto_Sans, Noto_Sans_Devanagari, Tiro_Devanagari_Hindi } from "next/font/google";
+import { Mukta, Rozha_One } from "next/font/google";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/header";
 import { Pwa } from "@/components/pwa";
@@ -7,11 +7,9 @@ import { SiteFooter, TabBar } from "@/components/tab-bar";
 import { getDictionary, hasLocale, LOCALES } from "@/lib/i18n";
 import "../globals.css";
 
-const noto = Noto_Sans({ subsets: ["latin"], variable: "--font-noto", display: "swap" });
-const notoDeva = Noto_Sans_Devanagari({ subsets: ["devanagari"], variable: "--font-noto-deva", display: "swap" });
-// Display faces for headings only: an editorial serif for Latin, a calligraphic Devanagari to match.
-const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap", axes: ["opsz"] });
-const tiro = Tiro_Devanagari_Hindi({ subsets: ["devanagari"], weight: "400", variable: "--font-tiro", display: "swap" });
+// Mukta was drawn for Hindi and English together; Rozha One is a Hindi-newspaper headline face.
+const mukta = Mukta({ subsets: ["latin", "devanagari"], weight: ["400", "600", "700"], variable: "--font-mukta", display: "swap" });
+const rozha = Rozha_One({ subsets: ["latin", "devanagari"], weight: "400", variable: "--font-rozha", display: "swap" });
 
 // Runs before first paint so a saved text size or theme never flashes the default.
 const PREFS_SCRIPT = `try{var p=JSON.parse(localStorage.getItem("yojana-prefs-v1")||"{}"),r=document.documentElement;if(p.size)r.dataset.size=p.size;if(p.theme&&p.theme!=="system")r.dataset.theme=p.theme}catch(e){}`;
@@ -33,8 +31,8 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f1e7" },
-    { media: "(prefers-color-scheme: dark)", color: "#0d1210" },
+    { media: "(prefers-color-scheme: light)", color: "#f3eee3" },
+    { media: "(prefers-color-scheme: dark)", color: "#12110f" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -49,14 +47,14 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
     <html
       lang={lang}
       suppressHydrationWarning
-      className={`${noto.variable} ${notoDeva.variable} ${fraunces.variable} ${tiro.variable} antialiased`}
+      className={`${mukta.variable} ${rozha.variable} antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: PREFS_SCRIPT }} />
       </head>
       <body className="flex min-h-dvh flex-col font-sans">
         <Header lang={lang} t={t} />
-        <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-10 pt-5 sm:pb-16">{children}</main>
+        <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-10 pt-6 sm:pb-16">{children}</main>
         <SiteFooter text={t.footer} />
         <TabBar lang={lang} labels={t.nav} />
         <Pwa labels={t.status} />
