@@ -172,7 +172,7 @@ export function toggleDoc(slug: string, index: number) {
 /* ── Display preferences ─────────────────────────────────────── */
 
 export type Prefs = { size: "md" | "lg" | "xl"; theme: "system" | "light" | "dark"; autoSpeak: boolean };
-const DEFAULT_PREFS: Prefs = { size: "md", theme: "system", autoSpeak: false };
+const DEFAULT_PREFS: Prefs = { size: "md", theme: "light", autoSpeak: false };
 
 export const prefsStore = createStore<Prefs>("yojana-prefs-v1", DEFAULT_PREFS);
 export const usePrefs = prefsStore.use;
@@ -187,6 +187,7 @@ export function applyPrefs() {
   const p = { ...DEFAULT_PREFS, ...prefsStore.get() };
   const root = document.documentElement;
   root.dataset.size = p.size;
-  if (p.theme === "system") delete root.dataset.theme;
-  else root.dataset.theme = p.theme;
+  const dark = p.theme === "dark" || (p.theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+  if (dark) root.dataset.theme = "dark";
+  else delete root.dataset.theme;
 }

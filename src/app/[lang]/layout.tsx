@@ -12,7 +12,8 @@ const mukta = Mukta({ subsets: ["latin", "devanagari"], weight: ["400", "600", "
 const rozha = Rozha_One({ subsets: ["latin", "devanagari"], weight: "400", variable: "--font-rozha", display: "swap" });
 
 // Runs before first paint so a saved text size or theme never flashes the default.
-const PREFS_SCRIPT = `try{var p=JSON.parse(localStorage.getItem("yojana-prefs-v1")||"{}"),r=document.documentElement;if(p.size)r.dataset.size=p.size;if(p.theme&&p.theme!=="system")r.dataset.theme=p.theme}catch(e){}`;
+// Light unless the person chose Dark, or chose Auto and their phone is in dark mode.
+const PREFS_SCRIPT = `try{var p=JSON.parse(localStorage.getItem("yojana-prefs-v1")||"{}"),r=document.documentElement;if(p.size)r.dataset.size=p.size;if(p.theme==="dark"||(p.theme==="system"&&matchMedia("(prefers-color-scheme: dark)").matches))r.dataset.theme="dark"}catch(e){}`;
 
 export function generateStaticParams() {
   return LOCALES.map((lang) => ({ lang }));
@@ -30,10 +31,7 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
 }
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f3eee3" },
-    { media: "(prefers-color-scheme: dark)", color: "#12110f" },
-  ],
+  themeColor: "#f3eee3",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

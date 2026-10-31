@@ -30,9 +30,9 @@ export function SettingsMenu({ t }: { t: Dictionary }) {
     { v: "xl", px: "text-2xl" },
   ];
   const themes: { v: Prefs["theme"]; label: string; icon: IconName }[] = [
-    { v: "system", label: s.auto, icon: "refresh" },
     { v: "light", label: s.light, icon: "sun" },
     { v: "dark", label: s.dark, icon: "moon" },
+    { v: "system", label: s.auto, icon: "refresh" },
   ];
 
   return (

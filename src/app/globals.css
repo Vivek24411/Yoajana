@@ -22,24 +22,7 @@
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #12110f;
-    --paper-2: #1d1b17;
-    --card: #181613;
-    --ink: #ede6d8;
-    --ink-2: #a69e90;
-    --rule: #36322b;
-    --accent: #f0673f;
-    --accent-soft: #3a1c13;
-    --stamp: #aa9cf2;
-    --stamp-soft: #241f3d;
-    --ochre: #e2ad4c;
-    --ochre-soft: #33280f;
-    color-scheme: dark;
-  }
-}
-
+/* Light is the default. Dark only when chosen in settings (or "Auto" on a dark phone; see the prefs script in layout). */
 :root[data-theme="dark"] {
   --paper: #12110f;
   --paper-2: #1d1b17;
@@ -187,8 +170,7 @@ button:disabled { cursor: default; }
     opacity: 0.92;
   }
   /* Ink soaks into paper in light mode only; in dark mode multiply would make it vanish. */
-  :root[data-theme="light"] .stamp { mix-blend-mode: multiply; }
-  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .stamp { mix-blend-mode: multiply; } }
+  :root:not([data-theme="dark"]) .stamp { mix-blend-mode: multiply; }
 
   /* Printed-form choices: a radio or box, a label, a hairline under each. */
   .choice {
